@@ -172,6 +172,19 @@ jobs:
             grep -n "kind: isDirectMessage" src/discord/monitor/agent-components.ts || true
           fi
 
+          # 修复 browser/routes/agent.act.ts 类型错误 (v2026.3.13)
+          # Error: Type 'string | undefined' is not assignable to type 'string'
+          # dragViaPlaywright 的 startRef/endRef 和 selectOptionViaPlaywright 的 ref/selector
+          if [ -f src/browser/routes/agent.act.ts ]; then
+            echo "🔧 尝试修复 browser agent.act.ts 类型错误..."
+            sed -i 's/startRef,$/startRef: startRef!,/' src/browser/routes/agent.act.ts
+            sed -i 's/startSelector,$/startSelector,/' src/browser/routes/agent.act.ts
+            sed -i '/dragViaPlaywright/,/});/{s/endRef,$/endRef: endRef!,/}' src/browser/routes/agent.act.ts
+            sed -i '/selectOptionViaPlaywright/,/});/{s/ref,$/ref: ref!,/}' src/browser/routes/agent.act.ts
+            sed -i '/selectOptionViaPlaywright/,/});/{s/selector,$/selector: selector!,/}' src/browser/routes/agent.act.ts
+            echo "✅ browser agent.act.ts 类型修复完成"
+          fi
+
       - name: 构建 OpenClaw
         working-directory: openclaw
         run: |
